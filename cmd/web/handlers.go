@@ -3,15 +3,14 @@ package main
 import (
     "fmt"
     "html/template"
-    "log"
     "net/http"
     "strconv"
 )
 
-func home(w http.ResponseWriter, r *http.Request) {
+func (app *application) home(w http.ResponseWriter, r *http.Request) {
     // prevent catch all
     if r.URL.Path != "/" {
-        http.NotFound(w, r)
+        app.notFound(w) // use helper method
         return
     }
 
@@ -26,31 +25,28 @@ func home(w http.ResponseWriter, r *http.Request) {
     // note variadic param files...
     ts, err := template.ParseFiles(files...)
     if err != nil {
-        log.Println(err.Error())
-        http.Error(w, "Internal Server Error", 500)
-        return
+        app.serverError(w, err) // use helper method
     }
 
     // write tmpl content to response body with Execute(), no w.Write needed:wq
     // no dynamic data (last param of Execute)
     err = ts.Execute(w, nil)
     if err != nil {
-        log.Println(err.Error())
-        http.Error(w, "Internal Server Error", 500)
+        app.serverError(w, err) // use helper method
     }
 }
 
-func showSnippet(w http.ResponseWriter, r *http.Request) {
+func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
     id, err := strconv.Atoi(r.URL.Query().Get("id"))
     if err != nil || id < 1 {
-        http.NotFound(w, r)
+        app.notFound(w) // use helper method
         return
     }
 
     fmt.Fprintf(w, "Display snippet: %d", id)
 }
 
-func createSnippet(w http.ResponseWriter, r *http.Request) {
+func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
     if r.Method != http.MethodPost {
         w.Header().Set("Allow", http.MethodPost)
         http.Error(w, "Method not allowed", 405)
