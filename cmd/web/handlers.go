@@ -3,7 +3,7 @@ package main
 import (
     "errors"
     "fmt"
-    //"html/template"
+    "html/template"
     "net/http"
     "strconv"
 
@@ -68,7 +68,27 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    fmt.Fprintf(w, "%v", s)
+    data := &templateData{Snippet: s}
+
+    // init slice containing paths to show.page.tmpl file, plus the base layout and partial
+    files := []string{
+        "./ui/html/show.page.tmpl",
+        "./ui/html/base.layout.tmpl",
+        "./ui/html/footer.partial.tmpl",
+    }
+
+    // parse template files
+    ts, err := template.ParseFiles(files...)
+    if err != nil {
+        app.serverError(w, err)
+        return
+    }
+    
+    // Execute template, pass snippets with parameter data
+    err = ts.Execute(w, data)
+    if err != nil {
+        app.serverError(w, err)
+    }
 }
 
 func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
