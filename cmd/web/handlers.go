@@ -23,11 +23,10 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    for _, snippet := range s {
-        fmt.Fprintf(w, "%v\n", snippet)
-    }
+    // create instance of templateData holding slice of snippets
+    data := &templateData{Snippets: s}
 
-    /*
+
     // init a slice containing two template files
     files := []string{
         "./ui/html/home.page.tmpl",
@@ -42,12 +41,11 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
         app.serverError(w, err) // use helper method
     }
 
-    // write tmpl content to response body with Execute(), no w.Write needed:wq
-    // no dynamic data (last param of Execute)
-    err = ts.Execute(w, nil)
+    // pass in templateData struct
+    err = ts.Execute(w, data)
     if err != nil {
         app.serverError(w, err) // use helper method
-    }*/
+    }
 }
 
 func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
@@ -70,7 +68,6 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 
     data := &templateData{Snippet: s}
 
-    // init slice containing paths to show.page.tmpl file, plus the base layout and partial
     files := []string{
         "./ui/html/show.page.tmpl",
         "./ui/html/base.layout.tmpl",
